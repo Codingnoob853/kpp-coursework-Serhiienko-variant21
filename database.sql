@@ -32,17 +32,19 @@ CREATE TABLE courier (
                          status VARCHAR(30)
 );
 
--- 3. Створення залежної таблиці замовлень (з зовнішніми ключами FK)
+-- 3. Створення залежної таблиці замовлень (delivery_order) з підтримкою інтегрального показника та життєвого циклу
 CREATE TABLE delivery_order (
                                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                 shipment_id BIGINT NOT NULL,
                                 client_id BIGINT NOT NULL,
                                 courier_id BIGINT NOT NULL,
-                                state VARCHAR(30) NOT NULL,
+                                order_date VARCHAR(50) NOT NULL,
+                                status VARCHAR(30) NOT NULL,
+                                total_cost DOUBLE NOT NULL,
                                 f1 DOUBLE NOT NULL,
                                 f2 DOUBLE NOT NULL,
                                 f3 DOUBLE NOT NULL,
-                                integral_index DOUBLE NOT NULL,
+                                risk_index DOUBLE NOT NULL,
                                 FOREIGN KEY (shipment_id) REFERENCES shipment(id),
                                 FOREIGN KEY (client_id) REFERENCES client(id),
                                 FOREIGN KEY (courier_id) REFERENCES courier(id)
@@ -65,7 +67,7 @@ INSERT INTO courier (full_name, phone, vehicle_type, status) VALUES
                                                                  ('Мельник Дмитро Володимирович', '+380637778899', 'Піший (Bolt Food)', 'АКТИВНИЙ'),
                                                                  ('Бондаренко Андрій Петрович', '+380509990011', 'Електросамокат', 'АКТИВНИЙ');
 
--- Додаємо замовлення доставок
-INSERT INTO delivery_order (shipment_id, client_id, courier_id, state, f1, f2, f3, integral_index) VALUES
-                                                                                                       (1, 1, 1, 'В ДОСТАВЦІ', 0.85, 0.90, 0.95, 0.90),
-                                                                                                       (2, 2, 2, 'ДОСТАВЛЕНО', 0.95, 0.98, 1.00, 0.977);
+-- Додаємо замовлення доставок (з урахуванням розрахованих факторів та інтегрального показника)
+INSERT INTO delivery_order (shipment_id, client_id, courier_id, order_date, status, total_cost, f1, f2, f3, risk_index) VALUES
+                                                                                                                            (1, 1, 1, '2026-11-01 12:00:00', 'CREATED', 1500.0, 52.0, 60.0, 70.0, 59.3),
+                                                                                                                            (2, 2, 2, '2026-11-01 14:00:00', 'CREATED', 550.0, 30.0, 40.0, 50.0, 39.5);

@@ -7,7 +7,7 @@ import java.util.List;
 public class DeliveryOrderDAO {
 
     public void add(DeliveryOrder order) throws SQLException {
-        String sql = "INSERT INTO delivery_order (shipment_id, client_id, courier_id, order_date, status, total_cost) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO delivery_order (shipment_id, client_id, courier_id, order_date, status, total_cost, f1, f2, f3, risk_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, order.getShipmentId());
@@ -16,12 +16,16 @@ public class DeliveryOrderDAO {
             ps.setString(4, order.getOrderDate());
             ps.setString(5, order.getStatus());
             ps.setDouble(6, order.getTotalCost());
+            ps.setDouble(7, order.getF1());
+            ps.setDouble(8, order.getF2());
+            ps.setDouble(9, order.getF3());
+            ps.setDouble(10, order.getRiskIndex());
             ps.executeUpdate();
         }
     }
 
     public List<DeliveryOrder> getAll() throws SQLException {
-        String sql = "SELECT id, shipment_id, client_id, courier_id, order_date, status, total_cost FROM delivery_order ORDER BY id";
+        String sql = "SELECT id, shipment_id, client_id, courier_id, order_date, status, total_cost, f1, f2, f3, risk_index FROM delivery_order ORDER BY id";
         List<DeliveryOrder> orders = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -34,7 +38,11 @@ public class DeliveryOrderDAO {
                         rs.getLong("shipment_id"),
                         rs.getString("order_date"),
                         rs.getString("status"),
-                        rs.getDouble("total_cost")
+                        rs.getDouble("total_cost"),
+                        rs.getDouble("f1"),
+                        rs.getDouble("f2"),
+                        rs.getDouble("f3"),
+                        rs.getDouble("risk_index")
                 );
                 orders.add(order);
             }
@@ -53,7 +61,7 @@ public class DeliveryOrderDAO {
     }
 
     public DeliveryOrder getById(long id) throws SQLException {
-        String sql = "SELECT id, shipment_id, client_id, courier_id, order_date, status, total_cost FROM delivery_order WHERE id = ?";
+        String sql = "SELECT id, shipment_id, client_id, courier_id, order_date, status, total_cost, f1, f2, f3, risk_index FROM delivery_order WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -66,7 +74,11 @@ public class DeliveryOrderDAO {
                             rs.getLong("shipment_id"),
                             rs.getString("order_date"),
                             rs.getString("status"),
-                            rs.getDouble("total_cost")
+                            rs.getDouble("total_cost"),
+                            rs.getDouble("f1"),
+                            rs.getDouble("f2"),
+                            rs.getDouble("f3"),
+                            rs.getDouble("risk_index")
                     );
                 }
             }
@@ -75,7 +87,7 @@ public class DeliveryOrderDAO {
     }
 
     public void update(DeliveryOrder order) throws SQLException {
-        String sql = "UPDATE delivery_order SET shipment_id = ?, client_id = ?, courier_id = ?, order_date = ?, status = ?, total_cost = ? WHERE id = ?";
+        String sql = "UPDATE delivery_order SET shipment_id = ?, client_id = ?, courier_id = ?, order_date = ?, status = ?, total_cost = ?, f1 = ?, f2 = ?, f3 = ?, risk_index = ? WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, order.getShipmentId());
@@ -84,7 +96,11 @@ public class DeliveryOrderDAO {
             ps.setString(4, order.getOrderDate());
             ps.setString(5, order.getStatus());
             ps.setDouble(6, order.getTotalCost());
-            ps.setLong(7, order.getId());
+            ps.setDouble(7, order.getF1());
+            ps.setDouble(8, order.getF2());
+            ps.setDouble(9, order.getF3());
+            ps.setDouble(10, order.getRiskIndex());
+            ps.setLong(11, order.getId());
             ps.executeUpdate();
         }
     }

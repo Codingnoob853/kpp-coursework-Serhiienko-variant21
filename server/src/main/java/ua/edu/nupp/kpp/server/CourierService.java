@@ -2,8 +2,10 @@ package ua.edu.nupp.kpp.server;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class CourierService {
+    private static final Logger LOG = Logger.getLogger(CourierService.class.getName());
     private final CourierDAO dao = new CourierDAO();
 
     public List<Courier> getAll() throws SQLException {
@@ -17,6 +19,7 @@ public class CourierService {
     public void add(Courier courier) throws SQLException {
         validate(courier);
         dao.add(courier);
+        LOG.info("Додано кур'єра");
     }
 
     public void update(Courier courier) throws SQLException {
@@ -25,6 +28,7 @@ public class CourierService {
         }
         validate(courier);
         dao.update(courier);
+        LOG.info("Оновлено кур'єра");
     }
 
     public void updateStatus(long id, String status) throws SQLException {
@@ -32,10 +36,12 @@ public class CourierService {
             throw new IllegalArgumentException("Статус кур'єра не може бути порожнім");
         }
         dao.updateStatus(id, status);
+        LOG.info("Оновлено статус кур'єра ID " + id + " на " + status);
     }
 
     public void delete(long id) throws SQLException {
         dao.delete(id);
+        LOG.info("Видалено кур'єра з ID " + id);
     }
 
     private void validate(Courier courier) {

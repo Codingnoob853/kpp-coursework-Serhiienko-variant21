@@ -2,8 +2,10 @@ package ua.edu.nupp.kpp.server;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ShipmentService {
+    private static final Logger LOG = Logger.getLogger(ShipmentService.class.getName());
     private final ShipmentDAO dao = new ShipmentDAO();
 
     public List<Shipment> getAll() throws SQLException {
@@ -17,6 +19,7 @@ public class ShipmentService {
     public void add(Shipment shipment) throws SQLException {
         validate(shipment);
         dao.add(shipment);
+        LOG.info("Додано відправлення");
     }
 
     public void update(Shipment shipment) throws SQLException {
@@ -25,10 +28,12 @@ public class ShipmentService {
         }
         validate(shipment);
         dao.update(shipment);
+        LOG.info("Оновлено відправлення");
     }
 
     public void delete(long id) throws SQLException {
         dao.delete(id);
+        LOG.info("Видалено відправлення з ID " + id);
     }
 
     private void validate(Shipment shipment) {
