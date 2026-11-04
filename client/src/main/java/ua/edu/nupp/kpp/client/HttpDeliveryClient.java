@@ -89,7 +89,7 @@ public class HttpDeliveryClient {
     }
 
     public List<DeliveryOrder> getOrders() throws IOException, InterruptedException {
-        return getList("/orders", DeliveryOrder.class);
+        return getList("/delivery-orders", DeliveryOrder.class);
     }
 
     // --- Методи додавання (POST: action=add) ---
@@ -110,6 +110,27 @@ public class HttpDeliveryClient {
                 "phone", phone,
                 "vehicleType", vehicleType,
                 "status", status
+        ));
+    }
+
+    public String addShipment(String trackingNumber, double weight, String description, double declaredValue) throws IOException, InterruptedException {
+        return post("/shipments", Map.of(
+                "action", "add",
+                "trackingNumber", trackingNumber,
+                "weight", String.valueOf(weight),
+                "description", description,
+                "declaredValue", String.valueOf(declaredValue)
+        ));
+    }
+
+    public String addOrder(long clientId, long courierId, long shipmentId, String orderDate, double totalCost) throws IOException, InterruptedException {
+        return post("/delivery-orders", Map.of(
+                "action", "add",
+                "clientId", String.valueOf(clientId),
+                "courierId", String.valueOf(courierId),
+                "shipmentId", String.valueOf(shipmentId),
+                "orderDate", orderDate,
+                "totalCost", String.valueOf(totalCost)
         ));
     }
 
@@ -135,6 +156,20 @@ public class HttpDeliveryClient {
 
     public String deleteCourier(long id) throws IOException, InterruptedException {
         return post("/couriers", Map.of(
+                "action", "delete",
+                "id", String.valueOf(id)
+        ));
+    }
+
+    public String deleteShipment(long id) throws IOException, InterruptedException {
+        return post("/shipments", Map.of(
+                "action", "delete",
+                "id", String.valueOf(id)
+        ));
+    }
+
+    public String deleteOrder(long id) throws IOException, InterruptedException {
+        return post("/delivery-orders", Map.of(
                 "action", "delete",
                 "id", String.valueOf(id)
         ));
