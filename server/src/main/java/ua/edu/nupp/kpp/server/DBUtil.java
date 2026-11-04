@@ -14,6 +14,12 @@ public final class DBUtil {
     }
 
     public static Connection getConnection() throws SQLException {
+        try {
+            // Примусово реєструємо драйвер MySQL для розгортання в Tomcat
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("MySQL JDBC Driver not found in classpath!", e);
+        }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 }
