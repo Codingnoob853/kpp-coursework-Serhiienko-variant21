@@ -297,7 +297,14 @@ public class MainApp extends Application {
         Button deleteBtn = new Button("Видалити"); deleteBtn.setOnAction(e -> deleteOrder());
         Button refreshBtn = new Button("Оновити"); refreshBtn.setOnAction(e -> loadOrders());
 
-        HBox buttonsBox = new HBox(10, addBtn, deleteBtn, refreshBtn);
+        // Кнопка для тестування послідовного CSV-імпорту (Пункти 10.3 - 10.9)
+        Button importCsvBtn = new Button("Імпорт CSV");
+        importCsvBtn.setOnAction(e -> {
+            apiClient.importDeliveriesCsv();
+            loadOrders(); // Оновлюємо таблицю замовлень після імпорту
+        });
+
+        HBox buttonsBox = new HBox(10, addBtn, deleteBtn, refreshBtn, importCsvBtn);
         VBox formBox = new VBox(5, new Label("Форма замовлення:"), orderClientIdField, orderCourierIdField, orderShipmentIdField, orderDateField, orderCostField, buttonsBox);
 
         vbox.getChildren().addAll(orderTable, formBox);
@@ -307,6 +314,7 @@ public class MainApp extends Application {
     private void loadOrders() {
         try { orderTable.getItems().setAll(apiClient.getOrders()); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
     }
+
     private void addOrder() {
         try {
             apiClient.addOrder(
@@ -319,11 +327,20 @@ public class MainApp extends Application {
             clearOrderForm(); loadOrders();
         } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
     }
+
     private void deleteOrder() {
         if (selectedOrderId == null) return;
         try { apiClient.deleteOrder(selectedOrderId); clearOrderForm(); loadOrders(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
     }
-    private void clearOrderForm() { selectedOrderId = null; orderClientIdField.clear(); orderCourierIdField.clear(); orderShipmentIdField.clear(); orderDateField.clear(); orderCostField.clear(); }
+
+    private void clearOrderForm() {
+        selectedOrderId = null;
+        orderClientIdField.clear();
+        orderCourierIdField.clear();
+        orderShipmentIdField.clear();
+        orderDateField.clear();
+        orderCostField.clear();
+    }
 
 
     private void showError(String title, String message) {

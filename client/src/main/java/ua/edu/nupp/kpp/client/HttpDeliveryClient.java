@@ -10,6 +10,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -173,5 +175,48 @@ public class HttpDeliveryClient {
                 "action", "delete",
                 "id", String.valueOf(id)
         ));
+    }
+
+    // --- Базовий послідовний CSV-імпорт (Пункти 10.3 - 10.8) ---
+    public void importDeliveriesCsv() {
+        Path filePath = Path.of("sample-data", "deliveries.csv");
+
+        try {
+            List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
+
+            if (lines.isEmpty()) {
+                System.out.println("CSV файл порожній.");
+                return;
+            }
+
+            // Пропускаємо заголовок (індекс 0), беремо перший тестовий рядок (індекс 1)
+            if (lines.size() > 1) {
+                String testLine = lines.get(1);
+                String[] fields = testLine.split(";");
+
+                if (fields.length != 6) {
+                    System.out.println("Невірний формат рядка у CSV файлі!");
+                    return;
+                }
+
+                // Перетворення полів до потрібних типів (згідно з пунктом 10.6)
+                long deliveryId = Long.parseLong(fields[0].trim());
+                long courierId = Long.parseLong(fields[1].trim());
+                String clientName = fields[2].trim();
+                String deliveryAddress = fields[3].trim();
+                String status = fields[4].trim();
+                double cost = Double.parseDouble(fields[5].trim().replace(",", "."));
+
+                // Передача розпарсених даних на сервер через POST (пункт 10.8)
+                // Використовуємо дані з файлу (наприклад, courierId, deliveryId як shipmentId, поточну дату і вартість)
+                // Увага: переконайся, що такий courierId та shipmentId існують в базі, щоб уникнути помилки зовнішніх ключів
+                String serverResponse = addOrder(1L, courierId, deliveryId, "2026-10-26", cost);
+
+                System.out.println("Успішно імпортовано та передано на сервер! Клієнт: " + clientName + ", Відповідь сервера: " + serverResponse);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
