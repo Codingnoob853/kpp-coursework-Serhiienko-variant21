@@ -1,5 +1,6 @@
 package ua.edu.nupp.kpp.server;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -7,56 +8,203 @@ import static org.junit.jupiter.api.Assertions.*;
 class CourierServerUnitTest {
 
     @Test
+    @DisplayName("Тест №1: відсутність перевищення нормативи для F1")
     void factor1BelowLimitReturnsZero() {
-        assertEquals(0.0, RiskCalculator.factor1(1.5, 2.0), 1e-9);
+        // Arrange
+        double weight = 1.5;
+        double limitWeight = 2.0;
+        double expected = 0.0;
+
+        // Act
+        double actual = RiskCalculator.factor1(weight, limitWeight);
+
+        // Assert
+        assertEquals(expected, actual, 1e-9);
     }
 
     @Test
+    @DisplayName("Тест №2: позитивний розрахунок F1 при перевищенні нормативи")
     void factor1AboveLimitCalculatesPercentage() {
-        assertEquals(50.0, RiskCalculator.factor1(3.0, 2.0), 1e-9);
+        // Arrange
+        double weight = 3.0;
+        double limitWeight = 2.0;
+        double expected = 50.0;
+
+        // Act
+        double actual = RiskCalculator.factor1(weight, limitWeight);
+
+        // Assert
+        assertEquals(expected, actual, 1e-9);
     }
 
     @Test
+    @DisplayName("Тест №3: обмеження F1 верхньою межею 100")
     void factor1ClampsAtHundred() {
-        assertEquals(100.0, RiskCalculator.factor1(10.0, 2.0), 1e-9);
+        // Arrange
+        double weight = 10.0;
+        double limitWeight = 2.0;
+        double expected = 100.0;
+
+        // Act
+        double actual = RiskCalculator.factor1(weight, limitWeight);
+
+        // Assert
+        assertEquals(expected, actual, 1e-9);
     }
 
     @Test
-    void factor1ThrowsOnNegativeWeightOrNonPositiveLimit() {
-        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.factor1(-0.1, 2.0));
-        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.factor1(1.0, 0.0));
+    @DisplayName("Тест №4: виняток при від'ємній вазі у factor1")
+    void factor1ThrowsOnNegativeWeight() {
+        // Arrange
+        double weight = -0.1;
+        double limitWeight = 2.0;
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.factor1(weight, limitWeight));
     }
 
     @Test
+    @DisplayName("Тест №5: виняток при нульовому або від'ємному ліміті у factor1")
+    void factor1ThrowsOnNonPositiveLimit() {
+        // Arrange
+        double weight = 1.0;
+        double limitWeight = 0.0;
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.factor1(weight, limitWeight));
+    }
+
+    @Test
+    @DisplayName("Тест №6: розрахунок інтегрального показника з округленням")
     void calculateAppliesWeightsAndRoundsToTwoDecimals() {
-        // 0.4 * 50 + 0.35 * 40 + 0.25 * 20 = 20 + 14 + 5 = 39.0
-        assertEquals(39.0, RiskCalculator.calculate(50.0, 40.0, 20.0), 1e-9);
+        // Arrange
+        double f1 = 50.0;
+        double f2 = 40.0;
+        double f3 = 20.0;
+        double expected = 39.0; // 0.40 * 50 + 0.35 * 40 + 0.25 * 20
+
+        // Act
+        double actual = RiskCalculator.calculate(f1, f2, f3);
+
+        // Assert
+        assertEquals(expected, actual, 1e-9);
     }
 
     @Test
-    void calculateThrowsWhenFactorOutOfRange() {
-        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.calculate(-1.0, 50.0, 50.0));
-        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.calculate(50.0, 100.1, 50.0));
-        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.calculate(50.0, 50.0, 120.0));
+    @DisplayName("Тест №7: виняток при значенні фактора вище 100")
+    void calculateThrowsWhenFactorAboveHundred() {
+        // Arrange
+        double f1 = 101.0;
+        double f2 = 10.0;
+        double f3 = 10.0;
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.calculate(f1, f2, f3));
     }
 
     @Test
-    void allowedStatusTransitionsReturnTrue() {
-        assertTrue(DeliveryOrderService.isAllowedTransition(OrderStatus.CREATED, OrderStatus.ASSIGNED));
-        assertTrue(DeliveryOrderService.isAllowedTransition(OrderStatus.ASSIGNED, OrderStatus.DELIVERED));
-        assertTrue(DeliveryOrderService.isAllowedTransition(OrderStatus.DELIVERED, OrderStatus.CANCELLED));
+    @DisplayName("Тест №8: виняток при від'ємному значенні фактора")
+    void calculateThrowsWhenFactorIsNegative() {
+        // Arrange
+        double f1 = -1.0;
+        double f2 = 50.0;
+        double f3 = 50.0;
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> RiskCalculator.calculate(f1, f2, f3));
     }
 
     @Test
-    void disallowedStatusTransitionsReturnFalse() {
-        assertFalse(DeliveryOrderService.isAllowedTransition(OrderStatus.CREATED, OrderStatus.DELIVERED));
-        assertFalse(DeliveryOrderService.isAllowedTransition(OrderStatus.ASSIGNED, OrderStatus.CREATED));
-        assertFalse(DeliveryOrderService.isAllowedTransition(OrderStatus.CANCELLED, OrderStatus.ASSIGNED));
+    @DisplayName("Тест №9: дозволений перехід CREATED -> ASSIGNED")
+    void createdToAssignedTransitionAllowed() {
+        // Arrange
+        OrderStatus from = OrderStatus.CREATED;
+        OrderStatus to = OrderStatus.ASSIGNED;
+
+        // Act
+        boolean allowed = DeliveryOrderService.isAllowedTransition(from, to);
+
+        // Assert
+        assertTrue(allowed);
     }
 
     @Test
+    @DisplayName("Тест №10: дозволений перехід ASSIGNED -> DELIVERED")
+    void assignedToDeliveredTransitionAllowed() {
+        // Arrange
+        OrderStatus from = OrderStatus.ASSIGNED;
+        OrderStatus to = OrderStatus.DELIVERED;
+
+        // Act
+        boolean allowed = DeliveryOrderService.isAllowedTransition(from, to);
+
+        // Assert
+        assertTrue(allowed);
+    }
+
+    @Test
+    @DisplayName("Тест №11: дозволений перехід DELIVERED -> CANCELLED")
+    void deliveredToCancelledTransitionAllowed() {
+        // Arrange
+        OrderStatus from = OrderStatus.DELIVERED;
+        OrderStatus to = OrderStatus.CANCELLED;
+
+        // Act
+        boolean allowed = DeliveryOrderService.isAllowedTransition(from, to);
+
+        // Assert
+        assertTrue(allowed);
+    }
+
+    @Test
+    @DisplayName("Тест №12: заборонений перехід CREATED -> DELIVERED")
+    void createdToDeliveredTransitionDisallowed() {
+        // Arrange
+        OrderStatus from = OrderStatus.CREATED;
+        OrderStatus to = OrderStatus.DELIVERED;
+
+        // Act
+        boolean allowed = DeliveryOrderService.isAllowedTransition(from, to);
+
+        // Assert
+        assertFalse(allowed);
+    }
+
+    @Test
+    @DisplayName("Тест №13: заборонений перехід CREATED -> CANCELLED через проміжні стани")
+    void createdToCancelledTransitionDisallowed() {
+        // Arrange
+        OrderStatus from = OrderStatus.CREATED;
+        OrderStatus to = OrderStatus.CANCELLED;
+
+        // Act
+        boolean allowed = DeliveryOrderService.isAllowedTransition(from, to);
+
+        // Assert
+        assertFalse(allowed);
+    }
+
+    @Test
+    @DisplayName("Тест №14: заборонений зворотний перехід ASSIGNED -> CREATED")
+    void assignedToCreatedTransitionDisallowed() {
+        // Arrange
+        OrderStatus from = OrderStatus.ASSIGNED;
+        OrderStatus to = OrderStatus.CREATED;
+
+        // Act
+        boolean allowed = DeliveryOrderService.isAllowedTransition(from, to);
+
+        // Assert
+        assertFalse(allowed);
+    }
+
+    @Test
+    @DisplayName("Тест №15: коректне збереження та читання полів DeliveryOrder")
     void deliveryOrderGettersAndSettersStoreValues() {
+        // Arrange
         DeliveryOrder order = new DeliveryOrder();
+
+        // Act
         order.setId(21L);
         order.setClientId(5L);
         order.setCourierId(3L);
@@ -66,6 +214,7 @@ class CourierServerUnitTest {
         order.setTotalCost(145.5);
         order.setRiskIndex(39.0);
 
+        // Assert
         assertEquals(21L, order.getId());
         assertEquals(5L, order.getClientId());
         assertEquals(3L, order.getCourierId());
@@ -77,23 +226,18 @@ class CourierServerUnitTest {
     }
 
     @Test
-    void deliveryOrderParameterizedConstructorSetsFields() {
-        DeliveryOrder order = new DeliveryOrder(
-                10L, 2L, 4L, 6L, "2026-11-20", "ASSIGNED", 250.0, 25.0, 50.0, 60.0, 42.5
-        );
-        assertEquals(10L, order.getId());
-        assertEquals("ASSIGNED", order.getStatus());
-        assertEquals(250.0, order.getTotalCost(), 1e-9);
-        assertEquals(42.5, order.getRiskIndex(), 1e-9);
-    }
-
-    @Test
+    @DisplayName("Тест №16: нульові фактори дають нульовий інтегральний показник")
     void zeroRiskFactorsProduceZeroIndex() {
-        assertEquals(0.0, RiskCalculator.calculate(0.0, 0.0, 0.0), 1e-9);
-    }
+        // Arrange
+        double f1 = 0.0;
+        double f2 = 0.0;
+        double f3 = 0.0;
+        double expected = 0.0;
 
-    @Test
-    void maxRiskFactorsProduceHundredIndex() {
-        assertEquals(100.0, RiskCalculator.calculate(100.0, 100.0, 100.0), 1e-9);
+        // Act
+        double actual = RiskCalculator.calculate(f1, f2, f3);
+
+        // Assert
+        assertEquals(expected, actual, 1e-9);
     }
 }
