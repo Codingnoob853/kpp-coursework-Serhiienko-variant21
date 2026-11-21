@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.List;
+import java.nio.file.Path;
 
 public class MainApp extends Application {
 
@@ -49,6 +49,13 @@ public class MainApp extends Application {
     private TextField orderDateField;
     private TextField orderCostField;
     private Long selectedOrderId = null;
+
+    // Елементи керування фоновим CSV-імпортом на вкладці «Замовлення»
+    private ProgressBar importProgressBar;
+    private Label importStatusLabel;
+    private Button importCsvBtn;
+    private Button cancelImportBtn;
+    private ImportDeliveriesTask activeImportTask;
 
     @Override
     public void start(Stage stage) {
@@ -297,18 +304,93 @@ public class MainApp extends Application {
         Button deleteBtn = new Button("Видалити"); deleteBtn.setOnAction(e -> deleteOrder());
         Button refreshBtn = new Button("Оновити"); refreshBtn.setOnAction(e -> loadOrders());
 
-        // Кнопка для тестування послідовного CSV-імпорту (Пункти 10.3 - 10.9)
-        Button importCsvBtn = new Button("Імпорт CSV");
-        importCsvBtn.setOnAction(e -> {
-            apiClient.importDeliveriesCsv();
-            loadOrders(); // Оновлюємо таблицю замовлень після імпорту
-        });
+        importCsvBtn = new Button("Імпортувати CSV");
+        importCsvBtn.setOnAction(e -> startCsvImport());
 
-        HBox buttonsBox = new HBox(10, addBtn, deleteBtn, refreshBtn, importCsvBtn);
-        VBox formBox = new VBox(5, new Label("Форма замовлення:"), orderClientIdField, orderCourierIdField, orderShipmentIdField, orderDateField, orderCostField, buttonsBox);
+        cancelImportBtn = new Button("Скасувати");
+        cancelImportBtn.setDisable(true);
+        cancelImportBtn.setOnAction(e -> cancelCsvImport());
+
+        importProgressBar = new ProgressBar(0);
+        importProgressBar.setPrefWidth(300);
+
+        importStatusLabel = new Label("Статус імпорту: очікування запуску.");
+
+        HBox buttonsBox = new HBox(10, addBtn, deleteBtn, refreshBtn, importCsvBtn, cancelImportBtn);
+        HBox progressBox = new HBox(10, importProgressBar, importStatusLabel);
+        VBox formBox = new VBox(5, new Label("Форма замовлення:"), orderClientIdField, orderCourierIdField, orderShipmentIdField, orderDateField, orderCostField, buttonsBox, progressBox);
 
         vbox.getChildren().addAll(orderTable, formBox);
         return vbox;
+    }
+
+    private void startCsvImport() {
+        if (activeImportTask != null && activeImportTask.isRunning()) {
+            return;
+        }
+
+        Path csvPath = Path.of("sample-data", "deliveries.csv");
+        ImportDeliveriesTask task = new ImportDeliveriesTask(csvPath, apiClient);
+        activeImportTask = task;
+
+        importCsvBtn.setDisable(true);
+        cancelImportBtn.setDisable(false);
+
+        importProgressBar.progressProperty().unbind();
+        importProgressBar.progressProperty().bind(task.progressProperty());
+
+        importStatusLabel.textProperty().unbind();
+        importStatusLabel.textProperty().bind(task.messageProperty());
+
+        task.setOnSucceeded(e -> {
+            importProgressBar.progressProperty().unbind();
+            importStatusLabel.textProperty().unbind();
+            int importedCount = task.getValue() == null ? 0 : task.getValue();
+            importProgressBar.setProgress(1.0);
+            importStatusLabel.setText("Імпорт завершено. Успішно додано записів: " + importedCount);
+            importCsvBtn.setDisable(false);
+            cancelImportBtn.setDisable(true);
+            activeImportTask = null;
+            loadOrders();
+        });
+
+        task.setOnFailed(e -> {
+            importProgressBar.progressProperty().unbind();
+            importStatusLabel.textProperty().unbind();
+            Throwable ex = task.getException();
+            String msg = (ex != null && ex.getMessage() != null && !ex.getMessage().isBlank())
+                    ? ex.getMessage()
+                    : "Помилка під час фонового CSV-імпорту.";
+            importProgressBar.setProgress(0);
+            importStatusLabel.setText("Помилка імпорту: " + msg);
+            importCsvBtn.setDisable(false);
+            cancelImportBtn.setDisable(true);
+            activeImportTask = null;
+            showError("Помилка CSV-імпорту", msg);
+        });
+
+        task.setOnCancelled(e -> {
+            importProgressBar.progressProperty().unbind();
+            importStatusLabel.textProperty().unbind();
+            importStatusLabel.setText("Імпорт скасовано користувачем.");
+            importCsvBtn.setDisable(false);
+            cancelImportBtn.setDisable(true);
+            activeImportTask = null;
+            loadOrders();
+        });
+
+        Thread worker = new Thread(task, "csv-import-task");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private void cancelCsvImport() {
+        if (activeImportTask != null && activeImportTask.isRunning()) {
+            cancelImportBtn.setDisable(true);
+            importStatusLabel.textProperty().unbind();
+            importStatusLabel.setText("Скасування імпорту...");
+            activeImportTask.cancel();
+        }
     }
 
     private void loadOrders() {
