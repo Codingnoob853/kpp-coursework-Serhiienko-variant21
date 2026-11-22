@@ -139,18 +139,18 @@ public class MainApp extends Application {
     }
 
     private void loadClients() {
-        try { clientTable.getItems().setAll(apiClient.getClients()); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { clientTable.getItems().setAll(apiClient.getClients()); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void addClient() {
-        try { apiClient.addClient(clientNameField.getText(), clientPhoneField.getText(), clientEmailField.getText(), clientAddressField.getText()); clearClientForm(); loadClients(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { apiClient.addClient(clientNameField.getText(), clientPhoneField.getText(), clientEmailField.getText(), clientAddressField.getText()); clearClientForm(); loadClients(); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void updateClient() {
         if (selectedClientId == null) return;
-        try { apiClient.updateClient(selectedClientId, clientNameField.getText(), clientPhoneField.getText(), clientEmailField.getText(), clientAddressField.getText()); clearClientForm(); loadClients(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { apiClient.updateClient(selectedClientId, clientNameField.getText(), clientPhoneField.getText(), clientEmailField.getText(), clientAddressField.getText()); clearClientForm(); loadClients(); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void deleteClient() {
         if (selectedClientId == null) return;
-        try { apiClient.deleteClient(selectedClientId); clearClientForm(); loadClients(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { apiClient.deleteClient(selectedClientId); clearClientForm(); loadClients(); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void clearClientForm() { selectedClientId = null; clientNameField.clear(); clientPhoneField.clear(); clientEmailField.clear(); clientAddressField.clear(); }
 
@@ -196,14 +196,14 @@ public class MainApp extends Application {
     }
 
     private void loadCouriers() {
-        try { courierTable.getItems().setAll(apiClient.getCouriers()); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { courierTable.getItems().setAll(apiClient.getCouriers()); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void addCourier() {
-        try { apiClient.addCourier(courierNameField.getText(), courierPhoneField.getText(), courierVehicleField.getText(), courierStatusField.getText()); clearCourierForm(); loadCouriers(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { apiClient.addCourier(courierNameField.getText(), courierPhoneField.getText(), courierVehicleField.getText(), courierStatusField.getText()); clearCourierForm(); loadCouriers(); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void deleteCourier() {
         if (selectedCourierId == null) return;
-        try { apiClient.deleteCourier(selectedCourierId); clearCourierForm(); loadCouriers(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { apiClient.deleteCourier(selectedCourierId); clearCourierForm(); loadCouriers(); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void clearCourierForm() { selectedCourierId = null; courierNameField.clear(); courierPhoneField.clear(); courierVehicleField.clear(); courierStatusField.clear(); }
 
@@ -249,7 +249,7 @@ public class MainApp extends Application {
     }
 
     private void loadShipments() {
-        try { shipmentTable.getItems().setAll(apiClient.getShipments()); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { shipmentTable.getItems().setAll(apiClient.getShipments()); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void addShipment() {
         try {
@@ -258,11 +258,11 @@ public class MainApp extends Application {
                     shipmentDescField.getText(),
                     Double.parseDouble(shipmentValueField.getText()));
             clearShipmentForm(); loadShipments();
-        } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void deleteShipment() {
         if (selectedShipmentId == null) return;
-        try { apiClient.deleteShipment(selectedShipmentId); clearShipmentForm(); loadShipments(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { apiClient.deleteShipment(selectedShipmentId); clearShipmentForm(); loadShipments(); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
     private void clearShipmentForm() { selectedShipmentId = null; shipmentTrackingField.clear(); shipmentWeightField.clear(); shipmentDescField.clear(); shipmentValueField.clear(); }
 
@@ -360,13 +360,13 @@ public class MainApp extends Application {
             Throwable ex = task.getException();
             String msg = (ex != null && ex.getMessage() != null && !ex.getMessage().isBlank())
                     ? ex.getMessage()
-                    : "Помилка під час фонового CSV-імпорту.";
+                    : "Background CSV import error.";
             importProgressBar.setProgress(0);
-            importStatusLabel.setText("Помилка імпорту: " + msg);
+            importStatusLabel.setText("Import error: " + msg);
             importCsvBtn.setDisable(false);
             cancelImportBtn.setDisable(true);
             activeImportTask = null;
-            showError("Помилка CSV-імпорту", msg);
+            showError("CSV Import Error", msg);
         });
 
         task.setOnCancelled(e -> {
@@ -394,7 +394,7 @@ public class MainApp extends Application {
     }
 
     private void loadOrders() {
-        try { orderTable.getItems().setAll(apiClient.getOrders()); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { orderTable.getItems().setAll(apiClient.getOrders()); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
 
     private void addOrder() {
@@ -407,12 +407,12 @@ public class MainApp extends Application {
                     Double.parseDouble(orderCostField.getText())
             );
             clearOrderForm(); loadOrders();
-        } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
 
     private void deleteOrder() {
         if (selectedOrderId == null) return;
-        try { apiClient.deleteOrder(selectedOrderId); clearOrderForm(); loadOrders(); } catch (Exception ex) { showError("Помилка", ex.getMessage()); }
+        try { apiClient.deleteOrder(selectedOrderId); clearOrderForm(); loadOrders(); } catch (Exception ex) { showError("Error", ex.getMessage()); }
     }
 
     private void clearOrderForm() {

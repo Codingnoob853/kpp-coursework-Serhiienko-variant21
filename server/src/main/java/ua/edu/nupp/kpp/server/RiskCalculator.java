@@ -5,7 +5,7 @@ public class RiskCalculator {
     // Розрахунок фактора F1
     public static double factor1(double weight, double limitWeight) {
         if (weight < 0 || limitWeight <= 0) {
-            throw new IllegalArgumentException("Некоректні дані для F1");
+            throw new IllegalArgumentException("Invalid data for F1");
         }
         double value = ((weight - limitWeight) / limitWeight) * 100.0;
         return Math.max(0.0, Math.min(100.0, value));
@@ -24,7 +24,7 @@ public class RiskCalculator {
     // Перевірка діапазону фактора [0..100]
     private static void check(double value) {
         if (value < 0.0 || value > 100.0) {
-            throw new IllegalArgumentException("Фактор має бути в діапазоні 0..100");
+            throw new IllegalArgumentException("Factor must be in range 0..100");
         }
     }
 }

@@ -185,7 +185,7 @@ public class HttpDeliveryClient {
             List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
 
             if (lines.isEmpty()) {
-                System.out.println("CSV файл порожній.");
+                System.out.println("CSV file is empty.");
                 return;
             }
 
@@ -195,7 +195,7 @@ public class HttpDeliveryClient {
                 String[] fields = testLine.split(";");
 
                 if (fields.length != 6) {
-                    System.out.println("Невірний формат рядка у CSV файлі!");
+                    System.out.println("Invalid row format in CSV file.");
                     return;
                 }
 
@@ -212,7 +212,7 @@ public class HttpDeliveryClient {
                 // Увага: переконайся, що такий courierId та shipmentId існують в базі, щоб уникнути помилки зовнішніх ключів
                 String serverResponse = addOrder(1L, courierId, deliveryId, "2026-10-26", cost);
 
-                System.out.println("Успішно імпортовано та передано на сервер! Клієнт: " + clientName + ", Відповідь сервера: " + serverResponse);
+                System.out.println("Successfully imported and sent to server. Client: " + clientName + ", Server response: " + serverResponse);
             }
 
         } catch (IOException | InterruptedException e) {

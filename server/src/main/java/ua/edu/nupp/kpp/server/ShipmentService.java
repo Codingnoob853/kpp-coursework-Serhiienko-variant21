@@ -19,32 +19,32 @@ public class ShipmentService {
     public void add(Shipment shipment) throws SQLException {
         validate(shipment);
         dao.add(shipment);
-        LOG.info("Додано відправлення");
+        LOG.info("Shipment added");
     }
 
     public void update(Shipment shipment) throws SQLException {
         if (shipment == null || shipment.getId() <= 0) {
-            throw new IllegalArgumentException("Некоректний ID відправлення для оновлення");
+            throw new IllegalArgumentException("Invalid shipment ID for update");
         }
         validate(shipment);
         dao.update(shipment);
-        LOG.info("Оновлено відправлення");
+        LOG.info("Shipment updated");
     }
 
     public void delete(long id) throws SQLException {
         dao.delete(id);
-        LOG.info("Видалено відправлення з ID " + id);
+        LOG.info("Deleted shipment with ID " + id);
     }
 
     private void validate(Shipment shipment) {
         if (shipment == null) {
-            throw new IllegalArgumentException("Відправлення не може бути null");
+            throw new IllegalArgumentException("Shipment must not be null");
         }
         if (shipment.getDescription() == null || shipment.getDescription().isBlank()) {
-            throw new IllegalArgumentException("Опис відправлення є обов'язковим");
+            throw new IllegalArgumentException("Shipment description is required");
         }
         if (shipment.getWeight() <= 0) {
-            throw new IllegalArgumentException("Вага відправлення має бути більшою за 0");
+            throw new IllegalArgumentException("Shipment weight must be greater than 0");
         }
     }
 }

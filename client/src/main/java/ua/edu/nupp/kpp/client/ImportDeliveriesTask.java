@@ -24,23 +24,23 @@ public class ImportDeliveriesTask extends Task<Integer> {
 
     @Override
     protected Integer call() throws Exception {
-        LOGGER.info("Початок фонового CSV-імпорту з файлу: " + csvPath);
+        LOGGER.info("Starting background CSV import from file: " + csvPath);
         updateMessage("Читання CSV-файлу...");
         updateProgress(0, 1);
 
         if (csvPath == null || !Files.exists(csvPath) || !Files.isReadable(csvPath)) {
-            throw new IllegalStateException("CSV-файл не знайдено або недоступний для читання: " + csvPath);
+            throw new IllegalStateException("CSV file not found or not readable: " + csvPath);
         }
 
         List<String> lines = Files.readAllLines(csvPath, StandardCharsets.UTF_8);
         if (lines.isEmpty()) {
-            throw new IllegalArgumentException("CSV-файл порожній.");
+            throw new IllegalArgumentException("CSV file is empty.");
         }
 
         String header = lines.get(0).replace("\uFEFF", "").trim();
         if (!EXPECTED_HEADER.equals(header)) {
             throw new IllegalArgumentException(
-                    "Невірний заголовок CSV. Очікувалося: '" + EXPECTED_HEADER + "', отримано: '" + header + "'"
+                    "Invalid CSV header. Expected: '" + EXPECTED_HEADER + "', got: '" + header + "'"
             );
         }
 
@@ -53,7 +53,7 @@ public class ImportDeliveriesTask extends Task<Integer> {
         if (total == 0) {
             updateProgress(1, 1);
             updateMessage("Немає рядків для імпорту.");
-            LOGGER.info("CSV-файл містить лише заголовок, рядків даних немає.");
+            LOGGER.info("CSV file contains only a header; no data rows to import.");
             return 0;
         }
 
@@ -63,7 +63,7 @@ public class ImportDeliveriesTask extends Task<Integer> {
 
         for (int i = 0; i < total; i++) {
             if (isCancelled()) {
-                LOGGER.info("CSV-імпорт скасовано користувачем після опрацювання " + processed + " із " + total + " рядків.");
+                LOGGER.info("CSV import cancelled by user after processing " + processed + " of " + total + " rows.");
                 updateMessage("Імпорт скасовано. Опрацьовано: " + processed + " із " + total + ", імпортовано: " + imported);
                 break;
             }
@@ -75,7 +75,7 @@ public class ImportDeliveriesTask extends Task<Integer> {
             if (fields.length != 5) {
                 skipped++;
                 processed++;
-                LOGGER.warning("Рядок " + fileLineNumber + " пропущено: очікується 5 полів, отримано " + fields.length);
+                LOGGER.warning("Row " + fileLineNumber + " skipped: expected 5 fields, got " + fields.length);
                 updateProgress(processed, total);
                 updateMessage("Опрацьовано " + processed + " із " + total + " (успішно: " + imported + ", пропущено: " + skipped + ")");
                 continue;
@@ -89,7 +89,7 @@ public class ImportDeliveriesTask extends Task<Integer> {
                 double totalCost = Double.parseDouble(fields[4].trim());
 
                 if (orderDate.isEmpty()) {
-                    throw new IllegalArgumentException("Порожнє поле order_date");
+                    throw new IllegalArgumentException("Empty order_date field");
                 }
 
                 DeliveryOrder order = new DeliveryOrder();
@@ -109,17 +109,17 @@ public class ImportDeliveriesTask extends Task<Integer> {
 
                 imported++;
                 processed++;
-                LOGGER.info("Рядок " + fileLineNumber + " успішно імпортовано (clientId=" + clientId + ", shipmentId=" + shipmentId + ")");
+                LOGGER.info("Row " + fileLineNumber + " imported successfully (clientId=" + clientId + ", shipmentId=" + shipmentId + ")");
             } catch (NumberFormatException ex) {
                 skipped++;
                 processed++;
-                LOGGER.log(Level.WARNING, "Рядок " + fileLineNumber + " пропущено через помилку формату числа: " + line, ex);
+                LOGGER.log(Level.WARNING, "Row " + fileLineNumber + " skipped due to invalid number format: " + line, ex);
             } catch (IllegalArgumentException ex) {
                 skipped++;
                 processed++;
-                LOGGER.log(Level.WARNING, "Рядок " + fileLineNumber + " пропущено: " + ex.getMessage() + " (" + line + ")", ex);
+                LOGGER.log(Level.WARNING, "Row " + fileLineNumber + " skipped: " + ex.getMessage() + " (" + line + ")", ex);
             } catch (Exception ex) {
-                LOGGER.log(Level.SEVERE, "Помилка HTTP/сервера під час обробки рядка " + fileLineNumber, ex);
+                LOGGER.log(Level.SEVERE, "HTTP/server error while processing row " + fileLineNumber, ex);
                 throw ex;
             }
 
@@ -127,7 +127,7 @@ public class ImportDeliveriesTask extends Task<Integer> {
             updateMessage("Опрацьовано " + processed + " із " + total + " (успішно: " + imported + ", пропущено: " + skipped + ")");
         }
 
-        LOGGER.info("Завершено CSV-імпорт. Опрацьовано: " + processed + ", успішно: " + imported + ", пропущено: " + skipped);
+        LOGGER.info("CSV import finished. Processed: " + processed + ", imported: " + imported + ", skipped: " + skipped);
         return imported;
     }
 }

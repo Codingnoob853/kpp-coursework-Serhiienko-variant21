@@ -40,12 +40,12 @@ public class DeliveryOrderService {
         order.setStatus(OrderStatus.CREATED.name());
 
         dao.add(order);
-        LOG.info("Додано замовлення доставки");
+        LOG.info("Delivery order added");
     }
 
     public void update(DeliveryOrder order) throws SQLException {
         if (order == null || order.getId() <= 0) {
-            throw new IllegalArgumentException("Некоректний ID замовлення для оновлення");
+            throw new IllegalArgumentException("Invalid order ID for update");
         }
         validate(order);
         requireClient(order.getClientId());
@@ -64,15 +64,15 @@ public class DeliveryOrderService {
         order.setRiskIndex(riskIndex);
 
         dao.update(order);
-        LOG.info("Оновлено замовлення доставки");
+        LOG.info("Delivery order updated");
     }
 
     public void updateStatus(long id, String status) throws SQLException {
         if (status == null || status.isBlank()) {
-            throw new IllegalArgumentException("Статус замовлення не може бути порожнім");
+            throw new IllegalArgumentException("Order status must not be blank");
         }
         dao.updateStatus(id, status);
-        LOG.info("Оновлено статус замовлення ID " + id + " на " + status);
+        LOG.info("Updated order ID " + id + " status to " + status);
     }
 
     public static boolean isAllowedTransition(OrderStatus from, OrderStatus to) {
@@ -84,53 +84,53 @@ public class DeliveryOrderService {
     public void changeState(long id, OrderStatus next) throws SQLException {
         DeliveryOrder current = dao.getById(id);
         if (current == null) {
-            throw new IllegalArgumentException("Замовлення з ID " + id + " не знайдено");
+            throw new IllegalArgumentException("Order with ID " + id + " not found");
         }
 
         OrderStatus currentStatus = OrderStatus.valueOf(current.getStatus());
 
         if (!isAllowedTransition(currentStatus, next)) {
-            LOG.warning("Недопустимий перехід стану: " + currentStatus + " -> " + next);
-            throw new IllegalArgumentException("Недопустимий перехід стану");
+            LOG.warning("Invalid state transition: " + currentStatus + " -> " + next);
+            throw new IllegalArgumentException("Invalid state transition");
         }
 
         dao.updateStatus(id, next.name());
-        LOG.info("Змінено стан замовлення: " + currentStatus + " -> " + next);
+        LOG.info("Changed order state: " + currentStatus + " -> " + next);
     }
 
     public void delete(long id) throws SQLException {
         dao.delete(id);
-        LOG.info("Видалено замовлення доставки з ID " + id);
+        LOG.info("Deleted delivery order with ID " + id);
     }
 
     private void validate(DeliveryOrder order) {
         if (order == null) {
-            throw new IllegalArgumentException("Замовлення не може бути null");
+            throw new IllegalArgumentException("Order must not be null");
         }
         if (order.getOrderDate() == null || order.getOrderDate().isBlank()) {
-            throw new IllegalArgumentException("Дата замовлення є обов'язковою");
+            throw new IllegalArgumentException("Order date is required");
         }
         if (order.getTotalCost() < 0) {
-            throw new IllegalArgumentException("Загальна вартість замовлення не може бути від'ємною");
+            throw new IllegalArgumentException("Total order cost must not be negative");
         }
     }
 
     private void requireClient(long clientId) throws SQLException {
         if (clientDAO.getById(clientId) == null) {
-            throw new IllegalArgumentException("Клієнта з ID " + clientId + " не знайдено");
+            throw new IllegalArgumentException("Client with ID " + clientId + " not found");
         }
     }
 
     private void requireCourier(long courierId) throws SQLException {
         if (courierDAO.getById(courierId) == null) {
-            throw new IllegalArgumentException("Кур'єра з ID " + courierId + " не знайдено");
+            throw new IllegalArgumentException("Courier with ID " + courierId + " not found");
         }
     }
 
     private Shipment requireShipment(long shipmentId) throws SQLException {
         Shipment shipment = shipmentDAO.getById(shipmentId);
         if (shipment == null) {
-            throw new IllegalArgumentException("Відправлення з ID " + shipmentId + " не знайдено");
+            throw new IllegalArgumentException("Shipment with ID " + shipmentId + " not found");
         }
         return shipment;
     }

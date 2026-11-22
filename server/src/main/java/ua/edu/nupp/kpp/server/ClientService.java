@@ -19,32 +19,32 @@ public class ClientService {
     public void add(Client client) throws SQLException {
         validate(client);
         dao.add(client);
-        LOG.info("Додано клієнта");
+        LOG.info("Client added");
     }
 
     public void update(Client client) throws SQLException {
         if (client == null || client.getId() <= 0) {
-            throw new IllegalArgumentException("Некоректний ID клієнта для оновлення");
+            throw new IllegalArgumentException("Invalid client ID for update");
         }
         validate(client);
         dao.update(client);
-        LOG.info("Оновлено клієнта");
+        LOG.info("Client updated");
     }
 
     public void delete(long id) throws SQLException {
         dao.delete(id);
-        LOG.info("Видалено клієнта з ID " + id);
+        LOG.info("Deleted client with ID " + id);
     }
 
     private void validate(Client client) {
         if (client == null) {
-            throw new IllegalArgumentException("Клієнт не може бути null");
+            throw new IllegalArgumentException("Client must not be null");
         }
         if (client.getFullName() == null || client.getFullName().isBlank()) {
-            throw new IllegalArgumentException("ПІБ клієнта є обов'язковим");
+            throw new IllegalArgumentException("Client full name is required");
         }
         if (client.getPhone() == null || client.getPhone().isBlank()) {
-            throw new IllegalArgumentException("Телефон клієнта є обов'язковим");
+            throw new IllegalArgumentException("Client phone is required");
         }
     }
 }
